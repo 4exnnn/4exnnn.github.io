@@ -17,12 +17,8 @@
       --glass: rgba(255, 255, 255, .66);
     }
     * { box-sizing: border-box; }
-    @media (hover: hover) and (pointer: fine) {
-      body, a, button { cursor: none; }
-      .custom-cursor, .custom-cursor-ring { display: block; }
-    }
     .custom-cursor, .custom-cursor-ring {
-      display: block !important; position: fixed; left: 0; top: 0; z-index: 2147483000;
+      display: none; position: fixed; left: 0; top: 0; z-index: 2147483000;
       pointer-events: none; border-radius: 50%; transform: translate(-50%,-50%);
     }
     .custom-cursor {
@@ -36,6 +32,10 @@
       transition: width .2s ease, height .2s ease, border-color .2s ease;
     }
     .custom-cursor-ring.is-hover { width: 52px; height: 52px; border-color: #c8ffbd; }
+    @media (hover: hover) and (pointer: fine) {
+      body, a, button { cursor: none; }
+      .custom-cursor, .custom-cursor-ring { display: block; }
+    }
     .language-control { position: fixed; z-index: 100; top: 18px; right: 20px; }
     .language-switch {
       position: relative; z-index: 2; top: auto; right: auto;
@@ -395,6 +395,76 @@
     }
     .cv-download:hover { transform:translateY(-4px) scale(1.025); text-decoration:none; box-shadow:0 14px 28px rgba(105,75,143,.2),0 0 28px rgba(190,255,183,.8),inset 0 1px 0 white; }
 
+
+    /* Touch-first and small-screen refinements */
+    @media (hover: none), (pointer: coarse) {
+      .custom-cursor, .custom-cursor-ring { display: none !important; }
+      body, a, button { cursor: auto; }
+      .scroll-hint { display: none !important; }
+      .language-switch, .language-menu button, .welcome-languages button,
+      .cv-download { min-height: 44px; }
+      .language-switch:hover, .welcome-languages button:hover,
+      .cv-download:hover, .language-menu button:hover {
+        transform: none;
+      }
+      .meta span:hover, .software-tags span:hover { transform: none; }
+    }
+    @media (max-width: 760px) {
+      html { scroll-padding-top: 16px; }
+      body {
+        background-attachment: scroll;
+        line-height: 1.62;
+      }
+      .page { width: min(100% - 20px, 620px); margin: 12px auto; }
+      .topbar { gap: 8px; font-size: .68rem; letter-spacing: .04em; }
+      .topbar span:last-child { text-align: right; }
+      .sheet { border-radius: 18px; }
+      header { padding: 48px 22px 30px; }
+      header::after { width: 76px; height: 76px; right: 16px; top: 22px; opacity: .55; }
+      h1 { font-size: clamp(2.25rem, 11vw, 3.5rem); }
+      .eyebrow { max-width: 75%; font-size: .66rem; }
+      .subtitle { max-width: 90%; margin-top: 14px; font-size: .96rem; }
+      .meta { gap: 7px; margin-top: 19px; font-size: .75rem; }
+      .meta span { padding: 6px 10px; }
+      .language-control { top: 10px; right: 10px; }
+      .language-switch { padding: 8px 12px; font-size: .78rem; }
+      .welcome-overlay { padding: 16px; }
+      .welcome-card { width: 100%; padding: 34px 22px; border-radius: 24px; }
+      .welcome-card h1 { font-size: clamp(2.5rem, 12vw, 4rem); }
+      .welcome-card p { font-size: .92rem; }
+      .welcome-languages { gap: 9px; }
+      .welcome-languages button { min-width: min(130px, 100%); padding: 12px 16px; }
+      .content { grid-template-columns: minmax(0, 1fr); }
+      main { min-width: 0; padding: 30px 22px 34px; }
+      aside { min-width: 0; padding: 30px 22px 34px; border-left: 0; border-top: 1px solid var(--line); }
+      section { margin-bottom: 30px; }
+      p, .cv-list li { font-size: .92rem; }
+      .cv-downloads { gap: 9px; }
+      .cv-download { padding: 11px 14px; font-size: .84rem; }
+      .scroll-progress {
+        left: 0; top: 0; transform: none; width: 100%; height: 3px;
+        border: 0; border-radius: 0; background: rgba(255,255,255,.35);
+      }
+      .scroll-progress span {
+        width: 0; height: 100% !important;
+        background: linear-gradient(90deg, #b98be9, #f1a9d8 52%, #a9efb0);
+      }
+      .ambient-one { width: 90px; height: 90px; left: -32px; top: 15vh; }
+      .ambient-two { width: 68px; height: 68px; right: -22px; top: 68vh; }
+      .ambient-three { display: none; }
+      footer { padding: 16px 22px; font-size: .72rem; }
+    }
+    @media (max-width: 380px) {
+      .page { width: calc(100% - 14px); margin: 8px auto; }
+      header { padding: 46px 17px 26px; }
+      main, aside { padding-left: 17px; padding-right: 17px; }
+      .topbar { font-size: .61rem; }
+      .meta { align-items: flex-start; flex-direction: column; }
+      .cv-downloads { flex-direction: column; align-items: stretch; }
+      .cv-download { justify-content: center; }
+      .welcome-languages { flex-direction: column; align-items: stretch; }
+      .welcome-languages button { width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -647,26 +717,30 @@
     });
 
     {
-      const cursor = document.getElementById("customCursor");
-      const ring = document.getElementById("customCursorRing");
-      let x = innerWidth / 2, y = innerHeight / 2, rx = x, ry = y;
-      document.addEventListener("pointermove", e => {
-        x = e.clientX; y = e.clientY;
-        cursor.style.left = x + "px"; cursor.style.top = y + "px";
-        cursor.style.opacity = "1"; ring.style.opacity = "1";
-      }, { passive: true });
-      const follow = () => {
-        rx += (x - rx) * .24; ry += (y - ry) * .24;
-        ring.style.left = rx + "px"; ring.style.top = ry + "px";
-        requestAnimationFrame(follow);
-      };
-      follow();
-      document.addEventListener("pointerover", e => {
-        if (e.target.closest("a,button")) ring.classList.add("is-hover");
-      });
-      document.addEventListener("pointerout", e => {
-        if (e.target.closest("a,button")) ring.classList.remove("is-hover");
-      });
+      const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+      if (finePointer) {
+        const cursor = document.getElementById("customCursor");
+        const ring = document.getElementById("customCursorRing");
+        let x = innerWidth / 2, y = innerHeight / 2, rx = x, ry = y;
+        document.addEventListener("pointermove", e => {
+          if (e.pointerType !== "mouse") return;
+          x = e.clientX; y = e.clientY;
+          cursor.style.left = x + "px"; cursor.style.top = y + "px";
+          cursor.style.opacity = "1"; ring.style.opacity = "1";
+        }, { passive: true });
+        const follow = () => {
+          rx += (x - rx) * .24; ry += (y - ry) * .24;
+          ring.style.left = rx + "px"; ring.style.top = ry + "px";
+          requestAnimationFrame(follow);
+        };
+        follow();
+        document.addEventListener("pointerover", e => {
+          if (e.target.closest("a,button")) ring.classList.add("is-hover");
+        });
+        document.addEventListener("pointerout", e => {
+          if (e.target.closest("a,button")) ring.classList.remove("is-hover");
+        });
+      }
     }
 
     (() => {
