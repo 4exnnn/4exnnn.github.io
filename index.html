@@ -347,6 +347,8 @@
       color: var(--muted); font-size: .78rem; background: rgba(226, 249, 239, .55);
     }
     @media (max-width: 760px) {
+      .custom-cursor, .custom-cursor-ring { display: none !important; }
+      body, a, button { cursor: auto !important; }
       .page { width: min(100% - 20px, 620px); margin: 10px auto; }
       .topbar { padding: 0 5px; }
       .sheet { border-radius: 13px; }
@@ -717,7 +719,7 @@
     });
 
     {
-      const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+      const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches && window.innerWidth > 760;
       if (finePointer) {
         const cursor = document.getElementById("customCursor");
         const ring = document.getElementById("customCursorRing");
